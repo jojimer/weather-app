@@ -31,6 +31,8 @@ export interface CurrentWeather {
   feelslike_f: number;
   uv: number;
   air_quality?: AirQuality;
+  vis_km: number;
+  vis_miles: number;
 }
 
 export interface AirQuality {

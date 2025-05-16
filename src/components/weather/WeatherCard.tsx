@@ -1,4 +1,3 @@
-import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { WeatherIcon } from './WeatherIcon';
 import { useWeather } from '@/contexts/WeatherContext';

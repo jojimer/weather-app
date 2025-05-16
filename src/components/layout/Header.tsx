@@ -26,7 +26,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 export function Header() {
   const { theme, setTheme } = useTheme();
   const { 
-    location, 
     setLocation, 
     refreshWeather,
     loading,

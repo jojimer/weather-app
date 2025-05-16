@@ -1,8 +1,7 @@
 import { WeatherData } from '@/lib/types';
 
-// In production, this should be an environment variable
-const API_KEY = '0a9c4828ef1e49d4b9892025250405';
-const BASE_URL = 'https://api.weatherapi.com/v1';
+const API_KEY = import.meta.env.VITE_WEATHER_API_KEY;
+const BASE_URL = import.meta.env.VITE_WEATHER_API_BASE_URL || 'https://api.weatherapi.com/v1';
 
 /**
  * Fetch weather data for a location
@@ -10,28 +9,65 @@ const BASE_URL = 'https://api.weatherapi.com/v1';
  * @returns Weather data
  */
 export async function fetchWeatherData(location: string): Promise<WeatherData> {
-  // If no API key is provided, return mock data
-  if (!API_KEY || API_KEY === 'YOUR_WEATHER_API_KEY') {
-    console.warn('No API key provided, using mock data');
-    return getMockWeatherData(location);
-  }
-
   try {
+    // Check if we have a valid API key
+    if (!API_KEY) {
+      console.warn('No API key provided, using mock data');
+      return getMockWeatherData(location);
+    }
+
+    // Check if we have a valid location
+    if (!location || location.trim() === '') {
+      throw new Error('Please provide a valid location');
+    }
+
+    // Check network connectivity
+    if (!navigator.onLine) {
+      throw new Error('No internet connection. Please check your network and try again.');
+    }
+
     const response = await fetch(
       `${BASE_URL}/forecast.json?key=${API_KEY}&q=${encodeURIComponent(
         location
-      )}&days=5&aqi=yes&alerts=yes`
+      )}&days=5&aqi=yes&alerts=yes`,
+      {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      }
     );
 
     if (!response.ok) {
-      throw new Error(`Weather API error: ${response.status}`);
+      if (response.status === 401) {
+        throw new Error('Invalid API key. Please check your configuration.');
+      } else if (response.status === 403) {
+        throw new Error('API access forbidden. Please check your subscription.');
+      } else if (response.status === 404) {
+        throw new Error('Location not found. Please try a different location.');
+      } else if (response.status === 429) {
+        throw new Error('Too many requests. Please try again later.');
+      } else {
+        const errorData = await response.json().catch(() => null);
+        throw new Error(
+          errorData?.error?.message || 
+          `Weather API error: ${response.status} ${response.statusText}`
+        );
+      }
     }
 
     const data = await response.json();
     return data as WeatherData;
   } catch (error) {
     console.error('Error fetching weather data:', error);
-    throw error;
+    
+    // If it's already an Error object with a message, throw it as is
+    if (error instanceof Error) {
+      throw error;
+    }
+    
+    // Otherwise, wrap it in a new Error with a generic message
+    throw new Error('Failed to fetch weather data. Please try again later.');
   }
 }
 
@@ -41,25 +77,53 @@ export async function fetchWeatherData(location: string): Promise<WeatherData> {
  * @returns Array of matching locations
  */
 export async function searchLocation(query: string) {
-  // If no API key is provided, return empty array
-  if (!API_KEY || API_KEY === 'YOUR_WEATHER_API_KEY') {
-    console.warn('No API key provided, search functionality disabled');
-    return [];
-  }
-
   try {
+    // Check if we have a valid API key
+    if (!API_KEY) {
+      console.warn('No API key provided, search functionality disabled');
+      return [];
+    }
+
+    // Check if we have a valid query
+    if (!query || query.trim() === '') {
+      return [];
+    }
+
+    // Check network connectivity
+    if (!navigator.onLine) {
+      throw new Error('No internet connection. Please check your network and try again.');
+    }
+
     const response = await fetch(
-      `${BASE_URL}/search.json?key=${API_KEY}&q=${encodeURIComponent(query)}`
+      `${BASE_URL}/search.json?key=${API_KEY}&q=${encodeURIComponent(query)}`,
+      {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      }
     );
 
     if (!response.ok) {
-      throw new Error(`Location search error: ${response.status}`);
+      if (response.status === 401) {
+        throw new Error('Invalid API key. Please check your configuration.');
+      } else if (response.status === 403) {
+        throw new Error('API access forbidden. Please check your subscription.');
+      } else if (response.status === 429) {
+        throw new Error('Too many requests. Please try again later.');
+      } else {
+        const errorData = await response.json().catch(() => null);
+        throw new Error(
+          errorData?.error?.message || 
+          `Location search error: ${response.status} ${response.statusText}`
+        );
+      }
     }
 
     return await response.json();
   } catch (error) {
     console.error('Error searching for location:', error);
-    throw error;
+    throw error instanceof Error ? error : new Error('Failed to search location');
   }
 }
 
@@ -99,6 +163,8 @@ export function getMockWeatherData(location: string): WeatherData {
       feelslike_c: 15,
       feelslike_f: 59,
       uv: 4,
+      vis_km: 10,
+      vis_miles: 12
     },
     forecast: {
       forecastday: [
@@ -179,7 +245,6 @@ export function getMockWeatherData(location: string): WeatherData {
             uv: 4,
           })),
         },
-        // Add more days with similar data structure
       ],
     },
   };

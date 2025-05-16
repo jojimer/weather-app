@@ -1,4 +1,3 @@
-import React from 'react';
 import { WeatherCard } from './WeatherCard';
 import { WeatherForecast } from './WeatherForecast';
 import { WeatherDetails } from './WeatherDetails';

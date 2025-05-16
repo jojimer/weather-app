@@ -1,4 +1,3 @@
-import React from 'react';
 import { ThemeProvider } from '@/contexts/ThemeContext';
 import { WeatherProvider } from '@/contexts/WeatherContext';
 import { Header } from '@/components/layout/Header';

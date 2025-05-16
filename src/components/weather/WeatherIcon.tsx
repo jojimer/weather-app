@@ -1,4 +1,3 @@
-import React from 'react';
 import { 
   Sun, 
   Cloud, 
@@ -8,11 +7,9 @@ import {
   CloudFog,
   CloudDrizzle,
   Wind,
-  Cloudy,
   MoonStar,
   CloudSun,
   CloudMoon,
-  Droplets
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -96,7 +93,6 @@ export function WeatherIcon({
         return CloudLightning;
       
       // Windy
-      case 1030:
       case 1168:
       case 1171:
         return Wind;

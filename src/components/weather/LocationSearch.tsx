@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { 
   Command, 
   CommandInput, 
@@ -16,7 +16,6 @@ import { Button } from '@/components/ui/button';
 import { Check, ChevronsUpDown, MapPin } from 'lucide-react';
 import { useWeather } from '@/contexts/WeatherContext';
 import { cn } from '@/lib/utils';
-import { searchLocation } from '@/services/weatherService';
 
 interface LocationOption {
   id: string;
